@@ -1,0 +1,921 @@
+(@ global configurations in git @)
+{
+	(1set user name)
+	{
+		ex: git config --global user.name "rwdesitha"
+	}
+
+	(set email)
+	{
+		ex: git config --global user.email "rwdesitha@gmail.com"
+	}
+
+	(get all the global configurations)
+	{
+		ex: git config --list
+	}
+}
+
+(initialize git in a project(start tracking a project))
+{
+	syntax: git init
+}
+
+(@ stagging index @)
+{
+	(adding all the changes that happes to a directory)
+	{
+		git add .
+	}
+
+	(adding to staging index by file name)
+	{
+		git add <file_name>
+	}
+
+	(Doing staging and committing in one single command)
+	{
+		ex1: commit -am "comment goes here”
+
+		desc:ex1:Here in –am m is for the comment
+	}
+
+	(Unstage staged files)
+	{
+		ex1: git reset <file_path>
+		ex2: git reset HEAD file_name.ext
+	}
+}
+
+(@ commit @)
+{
+	(commiting all changes to repository)
+	{
+		git commit -m "commet"
+	}
+
+	(Commit only a specific file from staged files)
+	{
+		git commit –m “comment” <file_name>
+	}
+
+	(How git commits work)
+	{
+		+ When we submit changes to the repository at that point git generates a checksum for each change set.
+		- checksum algorithms convert data into a simple number, we call that number a checksum
+		- same data always equals same checksum
+		- checksum is very usefull in computers to check that data have changed or not
+		+ git uses SHA-1 hash algorithm to create checksums
+		- the number generated from a checksum is 40 character hexadecimal string (0-9, a-f)
+		- what git does is get the set of changes and run through this algorithm and at the end then comes with this one 40 digit number.
+
+		file: ~git_resc/how_git_refer_to_commits_0001
+
+		+ If we had 3 sets of changes (3 snapshots) git feeds them into this SHA-1 algorithem to comeup with the SHA value and it attaches bit of meta information to eachone of those snapshots. It has the commit number at the top, it has the parent commit the commit that came before it, author of the commit and the commit message.
+		+ In here we can see each snapshot is referring to his parent(the commit that came before this commit). Thats how it knows the sequence of those commits.
+	}
+
+	(Best practices when committing to the repository)
+	{
+		+You should not commit two different things in one commit
+		+That means a single commit should be responsible for a interrelated set of changes.
+	}
+}
+
+(@ status command in git @)
+{
+	will report about the difference between our working directory staging index 
+
+	syntax: git status
+}
+
+(git log)
+{
+	(See commit log)
+	{
+		ex: git log
+
+		*@ git log --oneline *@
+		{
+			shorten the SHA-1 and shorted the commit log
+		}
+		*@ git log -3 *@
+		{
+			limits the number of commits to 3
+		}
+		*@ git log --oneline -3 *@
+		{
+			style like oneline and limits to 3 commits
+		}
+		*@ git log --since="2017-06-13" *@
+		{
+			commits since a specified date
+		}
+		*@ git log --author="desitha" *@
+		{
+			filter commit according to the author
+		}
+		*@ git log --grep="tem" *@
+		{
+			filter commits according to the keyword in commit messages
+		}
+
+		*@ git log branch_name --oneline -3 -- *@
+		{
+			will show commits on the specified branch and limit those only to 3
+		}
+	}
+
+	(See commit log by limiting the number of commits)
+	{
+		ex: git log -n 1
+	}
+
+	(See logs since)
+	{
+		ex1: git log --since=2016-08-08
+		ex2: git log --author="rwdesitha
+		ex3: log --grep="Ini"
+
+		note: git log === git log HEAD
+	}
+}
+
+(@ Introduction @)
+{
+	+ By having a staging index we can commit only what we want to the repository. For example lets imagin we have made 10 modifications in the working copy, when we commiting those changes we do not have to commit all the changes, we can only stage the required changes and commit only them as an one change set. Other not staged modifications are saved in my working copy.
+	we can pull things out of the repository the same way (repository->staging index->working). But usually we do not do that. We just pull straight from the repository to working copy, in that process staging index is also updated.
+	git workflow
+
+	file: ~git_resc/three_tree_in_git_0002
+}
+
+(@ Head pointer introduction @)
+{
+	+ We call this a pointer because it will point to a specific location in the repository, as you make changes the pointer is going to change it's position.
+
+	+ Head always point to the tip of the current branch in the repository. Anotherway to think of this is the last state of the repository, what was last checked out.
+
+	+ Good example to think about this is the record head of a caset recoder. As we start recording audio the tape moves pass the head and it records in to it. When we press stop record will stop and again when we start recording again it starts recording from the place that we stop recording. We can move the head to different places and hit record again that is where it starts recording. Head pointer in git is very similar to this sinario.
+
+	+ head points to the tip of the current branch in our repository
+	+ the last commit we made is the parent of the next commit
+	+ by default we are working on the master branch.
+	+ head always point to the tip of the currently checkout branch
+}
+
+(@ Deleting files introduction @)
+{
+	+ If we delete a file from the working directory, git will recognize that deletion of file in the working directory and indicate it as
+
+		deleted: file_name
+
+	+ And now if we stage those changes (file deletion) and commit to the repository, file will be deleted from the repository too.
+
+	+ We can delete a file from the git bash itself by command *@ git rm file_name *@. If we delete a file like this git will automatically stage those changes for us.
+
+	ex1: git rm <file_name>
+}
+
+(@ Moving and renaming in git introduction @)
+{
+	There are two ways of doing this operation
+
+	1. Like general go to the directory and rename the file manually and latter tell git to stage those changes.
+
+		+ If we rename file that is on the working directory or in staging index, manually and run git status cmd git will recoginze this as
+				deleted: file_name
+			untracked file
+				renamed_file_name
+
+		+ Now if we add renamed file to staging index ( *@ git add new_file_name *@){first there must be a file in the working directory with new_file_name} and remove the file with the old file name (*@ git rm old_file_name *@).
+		+ And after doing the above process and if we run git status cmd then git will indicated it like
+				renamed: old_file_name -> new_file_name
+
+		+ Git will only detect this as a rename operation only if the content of the new file and content of the old file matches atleast 50%. If not git will recognize this operation as a new file added to added to the repository and old file as deleted from the repository.
+
+	2. Rename the file using git bash
+		ex1: git mv old_file_name new_file_name
+		desc:ex1: renaming a file in git, in git moving a file and renaming a file is not two different thing
+
+		+ After doing the above move operation if we run git status git will recognize those changes as
+			renamed: old_file_name -> new_file_name
+
+		+ If we do this process from git bash and then run git status git will recognize this as 
+				renamed: old_file_name -> directory/new_file_name and git will automatically added that changes to the staging index.
+
+
+
+}
+
+(@ Revert commits @)
+{
+	git revert full_hash_value
+
+	Revert command will take all of the changes in a commit and flip them around.
+	It will do exact opposite of those changes.
+	It will be a complete mirror image of a commit.
+
+	To exit the vi editor use “:q!”
+}
+
+(@ Intro @)
+{
+	What this does is it allows us to specify where the head pointer should point to.
+
+	even though if we made a hard or soft or mixed reset and begin to commit new commits, if we have the hash value of  a commit we will be able to refer to it. But this will be possible for a some period of time, because garbage collector will erase those information after some time.
+
+	even thogh if we made a hard reset to the repository, if there is untracked file in the working directory those file will not be affected from the hard reset
+
+	this reset command is like the tape recorder example, we reset the head pointer to a new position and we start recording from there.
+}
+
+(@ Soft reset @)
+{
+
+	*@ git reset --soft hash_value *@
+
+	Does not change staging index or working directory
+
+	In this our staging index and working directory are going to contain the files in their later revised state. The repository's head pointer will be set to an earlier version.
+
+	So if we do a git diff --staged it’s going to tell us all those changes that have happen between the point where the head pointing and all the files sitting in staging index.
+}
+
+(@ Mixed reset @)
+{
+	*@ git reset --mixed hash_value *@
+
+	Changes to staging index to match the repository.
+
+	It does not change the working directory.
+
+	Our working directory will have all those changes that we have made.
+}
+
+(@ Hard reset @)
+{
+	*@ git reset --hard hash_value *@
+
+	Changes staging index and working directory to match the repository.
+}
+
+(@ Git ignore intro @)
+{
+	git will ignore file which are declared in the .gitignore file in the project folder.
+
+	but if there is a file which is already commited to the repository before declaring it in the .gitignore file those files will be tracked by git although they are declared in the .gitignore file because they are already commited to the repository.
+
+}
+
+(@ Untracking a file @)
+{
+	we add a file named temfile2.txt to the project
+	then we add and commit that file to the repository
+	now if we want to untrack this file, we will add that file name to the .gitignore file in the project directory.
+
+	but now if we change the content of this temfile2.txt and run a git status it will show us the changes.
+	Even though we added that file to the .gitignore we are still tracking changes to that file.
+	that is because before we adding this file the .gitignore file we have commited that to the repository.
+
+	but what if we want to remove this file from the tracking only.
+	that means the current copy of that file in the repository and working directory will be maintatined but changes to that file will not be tracked by git.
+
+	git rm --cached temfile2.txt
+
+	(but practically I have checked that the copy in the repository is also deleted. but the copy in the working directory will stay the same and it will be untracked.)
+
+	so if you want to untrack file that are already being tracked but you don't wanna remove them completely 
+	what you need to do is not only ignore it but tell git also to remove it from the chache(staging index)
+}
+
+(@ Track empty directories @)
+{
+	git is designed to be a file-tracking system
+	tracks the directories it takes to get to files
+	ignores directories with no files
+
+	to make git track empty directories we have add some file in it.
+
+	*@ touch assets/pdfs/.gitkeep *@
+	this command will create a file called .gitkeep in the assets/pdfs
+
+	and now git will track this directory
+}
+
+(@ Referencing commits @)
+{
+	tree in git is a structure of file in the git repository
+
+	treeish means something that is a reference to part of the tree
+
+	is simplest treeish is a reference to a commit 
+
+	In trun treeish reference the three, the git repository and all the files that are in there at that point.
+}
+
+(@ Tree-ish @)
+{
+	full SHA-1 hash
+	short SHA-1 hash
+	HEAD pointer - allways point the the commit that is in the tip of the currently checkedout branch
+	branch reference
+	ancestry
+	{
+		parent commit
+		-HEAD^, ACF87504^, master^
+		-HEAD~1, HEAD~
+		{
+			HEAD~<NUMBER OF GENERATIONS>
+		}
+		grandparent commit
+			- HEAD^^, acf87504^^^, master^^^
+			- HEAD~2
+		great-grandparent commit
+			- HEAD^^^, acf87504^^^, master^^^
+			- HEAD~3
+		}
+
+		*@ git ls-tree HEAD *@
+		{
+			will give us the all files in where the HEAD is pointing to
+		}
+		*@ git ls-tree master *@
+		{
+			will give us the all files in the master branch
+		}
+		*@ git ls-tree master  assests/*@
+		{
+			will give us the all the files in the master branch in assets folder
+		}
+		*@ git ls-tree master^ assets/ *@
+		{
+			will give us the all the file and folders in the assets folder in one previous to the master branch's latest commit.
+		}
+		*@ git ls-tree master^^ assets/ *@
+		{
+			will give us the all the files and folders in the assets folder in the master branch 2 commits previous to the latest commit
+		}
+
+		blob
+		{
+			represent any kind of file
+		}
+		tree
+		{
+			represet a directory, commit
+		}
+
+		*@ ls-tree 994170cc93993e860 *@
+		{
+			will goes to the direcotry with ls-tree 994170cc93993e860 treeish
+		}
+}
+
+(@ git diff  @)
+{
+	gives differences between staging index and the working directory
+
+	ex1: git diff
+
+	ex2: git diff <file_name>
+		desc-ex1- will give the all the differences in the specified file in the working directory against the staging index
+
+	ex3: git diff --staged
+		 git diff --staged [file_name]
+		desc-ex2- Gives the differences with the staging index and the repository.
+
+	ex4: git diff --color-words contact.html
+
+		Normally git bash will show git diff file_name as
+			file: ~/git_resc/git_diff_normal_0003.PNG
+
+		But with git diff --color-words file_name.ext, will show it as follows
+ 	 		file: ~/git_resc/git_diff_with_color_word_0004.PNG
+			
+	ex5: git diff 5d77665
+	
+		will give us the difference betwen the HEAD pointer and the 5d77665 point
+	
+	ex6: git diff 8b0aaf6 tours.html
+		gives the difference of tours.html, between where the HEAD is pointing to and 8b0aaf6 tree-ish
+		
+	ex7: git diff 8b0aaf6..8b0aaf6
+		comparing changes between two tree-ish
+		
+	ex8: git diff --stat --summary 1007a68..HEAD
+		gives summary between changes of two tree-ish
+		
+	ex9: git diff --stat -b 1007a68..HEAD
+		gives a summery between changes of two tree-ish but ignoring white space changes
+		instead of -b we can use -w that means tell git to ignore all white space chagnes made
+	
+	ex10: git diff --color-words new_feature..shorten_title
+		will show differences in two branches not in seperate chuncks but in same line.
+		
+	
+}
+
+(@ Branches Intro @)
+{
+	branches are cheap
+	try new ideas
+	isolate features or sections of work
+	although we have different branches we only get a one working directory
+	
+	ex1: git branch
+		will show all the branches, one that is marked with a astric sign shows us the currently checkedout branch
+		
+	ex2: git branch new_feature
+		creates a branch called new_feature
+		this is stored in .git/refs/heads/new_features
+		although we have created a new branch still out head is pointing to the master branch because we haven't still commit any changes to the new_feature branch.
+		when we made our first commit to the new branch the head will point to that branch.
+		At this point after creating a new branch and before committing any changes to it the master branch and the new branch both will have the same head pointer.
+		
+	ex3: git checkout new_feature
+		with this command we can checkout to the new_feature branch.
+		
+	ex4: git checkout -b 'shorten_title'
+		creating a branch called 'shorten_title and checkout to it at the same time'
+	
+	ex5: log --graph --oneline --decorate --all
+		shows the all the commit logs in oneline format and it shows us the branches of those commits and where the head is pointing to
+	
+	ex6: ISSUE: checkout to a branch while there are uncommitted changes in the current branch
+			
+			in a situation like above if we try to checkout to a new branch git will throw and error message saying "commit your changes or stash them before you can switch branches"
+			
+			in a situation like this user can do 3 things
+				1. commit those changes to that branach
+				2. checkout that changed file and make it similar to the original status on the repository brach.
+				3. stash those changes
+				
+			But in a situation like above if we add a new file the project and then try to switch the branches then there will be no problem in switching branches.Because the changes that I have made to the project will not change by checking out the new branch, it will stay the same although we checkout to a new branch.
+			Git will give us a warnning if we are about to loose data by switching branches.
+	
+	ex7: git branch --merged
+		wheather one branch completely contains another branch or not
+		will show us all the branches that are included in the current branch
+	
+	ex8: git branch -m new_feature seo_title
+		this command will rename new_feature branch to seo_title
+		
+	ex9: git branch -d branch_to_delete
+			if you are in the same branch that you are trying to delete then git wil not allow your to delete the branch.
+			you have to move away from the deleting brach.
+			now if we commit some changes to the deleting branch and checkout to the master branch and then try to delete the previous branch using *@ git branch -d branch_to_delete *@ command git will throw and error saying "error: The branch 'branch_to_delete' is not fully merged.If you are sure you want to delete it, run 'git branch -D branch_to_delete'."
+			if we use *@ git branch -d branch_to_delete *@ command git will say there are changes in the deleting branch that is not in this branch. for deleting with -d first the deleting branch has to be merged with the current branch.
+			But if we use *@ git branch -D branch_to_delete *@  capital D then git will delete the branch irrespective of the new commits in the deleting branch.
+}
+
+(@ Merging Intro @)
+{
+	to merge a branch to another first we have to be in the branch that things are being merge into (the receiver). 
+	
+	ex1 : git merge branch_name
+	{
+		after merging two branches if we see the commit log the latest commit of the current branch will be updated to the commits on the merged branch.
+
+		now if we run *@ git diff master..seo_title @* then there will be no differences.
+
+		now if we run *@ git branch --merged @* git will tell use seo_title is fully incoperated into master.
+	}
+	
+	difference between fast-forward merges and real merges
+		
+		if we create a branch from master branch and then we do our commit on the new branch without doing any commit to the master branch. that means that HEAD of the master branch will point to the same commit when the new branch was created and same position when it is being merged.
+		when we merge those two branches git will perform a fastforward merge.because nothing have changed in the master branch from the time the new branch was created.
+		
+		in fast forward merge what happens is that the new branch will come to exist in the merged branch with its latest commit ids.
+		
+		after doing fast forward merge if we check the commits logs of the two branches all the commit we can see all the commits that are in the new branch now exists in the merged branch too.
+		
+		but if we want those changes to be commited to the merging branch with a new commit id we can do it with @* git merge --no--ff branch @*
+		
+	*@ git merge --ff-only branch_name *@
+	{
+		tells git to merge if git can only do fast forward merge. If git cannot make fast forward merge then aboard
+	}
+	
+	*@ recursive merge *@
+	{
+		when we are merging two branches if the parent branch has new commits to it, means in parent branch now head is not pointing to the same commit when new branch was created.
+
+		in such a situation if try to merge those branches git will perform a recursive merge.
+
+		in recursive merge git will commit a new commit to the parent branch with the merge.
+	}
+	
+	*@ merge conflict *@
+	{
+		in the master branch we make changes to the top of the index.html file
+		Then we have another branch merging in that have changes to index.html file near bottom.
+
+		the above situation is not a problem to git, git can handle such things.
+
+		but conflict occours when changes have made to the same lines in both branchs.
+
+		when such conflict occours in the in merging the branch will be changed in to something like *@ (master|MERGING) *@ this. this means we are in middle of a merge
+	}
+	
+	*@ resolving merge conflicts *@
+		{
+			we have 3 choices in resolving merge conflicts
+				1. abort merge
+				2. resolve the conflicts manually
+				3. use a merge tool
+
+				*@ git merge --abort *@
+				{
+					use to abort a conflicting merge
+				}
+
+				*@ resolve the conflicts manually *@
+				{
+					git will mark the conlicted areas with ">>>>" and "====="
+
+					after finding the conflicted lines then fix those conflicts.
+
+					after fixing the conflicts stage the changes and commit.
+
+					because you are in a middle of a merge conflict it is not necessary to give a commit message git will open the vim editor, if you like enter some comment.
+
+					Now if we run *@ git branch --merged *@ then we will able to see the merged branch under.
+				}
+		}
+
+		*@ strategies to reduce conflicts *@
+		{
+			1. keep lines short
+			2. keep commits small and focused
+			3. beware stray edits to whitespace spaces, tabs, line returns
+			4. merge often
+				we can merge more than once 
+			5. track changes to master
+				what this means is as changes continue to happen in master keep bringing those changes in to your branch. so your branch mostly stays sync with the master.
+		}
+}
+
+*@ stash in git *@
+{
+	stash is a place where we can store the changes temporarly without having commit them to the repository.
+
+	It is lot like putting something to a drawer to save it for later.
+
+	stash is not a part of repository, staging index or the working directory. It is a special fourth area in git seperate from others. With This we are putting it to it aren't commits, but they are lot like commits they work in a similar way. But they don't have a SHA assosiated with it.
+
+	*@ example for a stash condition *@
+	{
+		if we are working on a branch and we made some changes on that branch and if we try to checkout to the master branch without commiting those changes to the current bransh, git will not allow us to do that. because if we try to checkout to master the new uncommited changes will be lost.
+
+		But having such a situation although if we want to checkout to another branch what we can do is we can stash the current changes to this branch and then checkout the the desired branch.
+
+		*@ git stash save "msg" *@
+		{
+			with this command the current state of the current branch will be save in the stash. and then what happen is git will make a hard reset to the latest commit on the current branch. that means all the modification I have done on the currnent branch will be stashed and now i don't have those changes in this branch, but they are stashed. So now having no midifications on the branch i can succssfully checkout to another branch.
+		}
+	}
+
+	*@ viewing stash *@
+	{
+		*@ git stash list *@
+		{
+			will show us what are in the stash. The output of following command will be like following "stash@{0}: On shorten_title: changed mission page title".
+			we can refer to this stash by "stash@{0}"
+		}
+
+		*@ git stash show stash@{0} *@
+		{
+			will show a detailed view of a particular stash.
+		}
+
+		*@ git stash show -p stash@{0} *@
+		{
+			will show us the stash with detiails, with source code
+		}
+	}
+
+	*@ retrive stash *@
+	{
+		we can retrive stash from any branch, that means we stash a branch in branch A and we can retrive that stash in master branch git doesn't casre about where we are now.
+		Like in merging there can be conflicts in retriving stash to another branch.
+
+		*@  git stash pop stash@{0} *@
+		{
+			if we don't supply a "stash@{0}" this git will pop the first stash in the stash list.
+
+			pop - if we use pop like in here when we retrive the stash the retriving stash will be deleted from the stash list.
+
+			apply - if we use apply instead of pop retriving stash will not delete the it from he stash list.
+		}
+	}
+
+	*@  git stash drop stash@{0} *@
+	{
+		this will drop the stash id with "stash@{0}" from the list. 
+	}
+
+	*@ git stash clear *@
+	{
+		will clear you stash list means delete all stash list
+	}
+
+}
+
+*@ remote repositories *@
+{
+
+	We have a branch named master in our local repository with some commits in it.
+	Now we are going to introduce a remote server, what we have to do is take our commits and put them on the remote server, so others can see them.
+	The process we use to do that calle a "push".
+	So we push our changes to the remote server. 
+	At that point remote server creates the same branches with the same commits.
+	Having those changes in the remote repository our collaborators can see our commits.
+	At the same time git also creat a local branch on our computer that is typically called origin/master that references the remote repository branch.
+	And this origin/master branch always try to stay sync with the remote server branch.
+	In our local repository we work as normal and make our changes and commit them to the local repository.
+	When we ready to share those commits we push those to the branch in the remote server.
+	Now to remote repository and the local origin/master and local branch have the same commits in them.
+	Whe other's make changes to the repository and we want to get those changes to our local repository we do a "fetch".
+	When we are fetching from remote repository those are comming to the origin/master branch.
+	What fetch does in sycn local origin/master branch with the remote repository branch. It does not bring those into the local repository branch.
+	At the moment our local repository knows the chagnes in the remote repository.
+	Those changes will not appear in our master branch untill we do a merge.
+	If we merge the origin/master with the local branch at that time those remote server changes will appear in the local repository branch.
+
+	when working with remote repositories first we have to tell local gir repository about the remote repository.
+
+	We can have more than one remote for a project.
+
+	*@ git remote *@
+	{
+		will show all the remote repos
+	}
+
+	*@ git remote add <alias><url> *@
+	{
+
+	}
+
+	*@ git remote -v *@
+	{
+		show all the remote repository urls
+	}
+
+	in git config file of the project you can find the remote server
+		ex:
+		{
+
+			cat .git/config
+
+			[remote "origin"]
+			url = https://github.com/rwdesitha/cms_1.git
+			fetch = +refs/heads/*:refs/remotes/origin/*
+		}
+
+	*@ git remote rm origin *@
+	{
+		removing a remote repository
+	}
+
+	*@ push with remote branch *@
+	{
+		when we are pushing to the remote repository we are pushing a branch.
+
+		*@  git push -u <alias_name> <branch_name> *@
+		{
+			will push a branch specified to the remote repository that alias_name points to.
+		}
+
+		if we push to repository without -u option git config file would be like this
+		{
+			$ cat .git/config
+			[core]
+			        repositoryformatversion = 0
+			        filemode = false
+			        bare = false
+			        logallrefupdates = true
+			        symlinks = false
+			        ignorecase = true
+			[branch "master"]
+			[remote "origin_git_test"]
+			        url = https://github.com/rwdesitha/git_test.git
+			        fetch = +refs/heads/*:refs/remotes/origin_git_test/*
+
+		}
+
+		if we push to repository without -u optio git config file would be like this
+		{
+			$ cat .git/config
+			[core]
+			        repositoryformatversion = 0
+			        filemode = false
+			        bare = false
+			        logallrefupdates = true
+			        symlinks = false
+			        ignorecase = true
+			[remote "origin_git_test"]
+			        url = https://github.com/rwdesitha/git_test.git
+			        fetch = +refs/heads/*:refs/remotes/origin_git_test/*
+			[branch "master"]
+			        remote = origin_git_test
+			        merge = refs/heads/master
+
+		}
+
+
+	}
+
+	*@ git branch -r *@
+	{
+		will show only remote branches
+	}
+
+	*@ git branch -a *@
+	{
+		will show only remote branches and local branches
+	}
+}
+
+*@ local and remote branchs *@
+	{
+		lets imagin that we have a local repository in our computer having a master branch and some commits in it.
+
+		Now if we introduce a remote server to our local repository, what we want to do is take our commits and put them on this remote repository.The process that we use to do this called a push. We push our changes to the remote server. At that point the remote server creates the same branch with the same commits. At the same time git also make another branch on our local repository that is tipically called origin/[branch_name].  this origin/[branch_name] is a branch on our local machine that references the remote server branch and it always try to stay sync with that.
+		In our local machine we continue developing and make more commits to the local repository, when we are ready to share those commits again we do a push, so we push that code up to the remote server and it make those changes in or origin/[branch_name] branch in our local machine, one that try to stay sync with the remote repository.
+		When other people make changes to the remote server we need to pull those changes. To get those changes we do a FETCH. It will fetch the changes to our origin/[branch_name]. Remember FETCH will bring those changes to the origin/[branch_name] branch, but it does not bring it in to our master branch until we do a merge. If we merge those changes with our local branch we will have the copy that looks exactly like in the repository.
+
+		But if we use PULL it will to the FETCH AND MERGE at once.
+
+		Above is a over simplified explanation real sinario is explained in bellow.
+
+		In reality if we have a local repository having a branch named master and having it's own commits in it. When we do a push it will push a exacty copy of my repository to the remote server. Now remote repository HEAD and my local repository HEAD is pointing to the same commit. At the same time (when we are pushing to the remote server for the first time) another pointer will be added to our local repository called origin/master and it will also point to the latest commit on that branch. Now both both pointers HEAD and origin/master pointers are pointing to the same commit.
+		When we make a new commit in our local repository our HEAD pointer will be moved to that commit, but origin/master pointer will be in the same place it will not move.
+		Now when we do a push to the remote server our commit will push to the remote server and HEAD pointer in the remote server will now point to those commits and in our local repository origin/master pointer will also update it's positon to be same as the HEAD in local repository and remote repository.
+		Now if new changes came to the remote repository from someone else, and remote repository will move it's HEAD now to those new commits.
+		Now it we do a fetch, git will bring that new change to our local computer, and moves the origin/master pointer to point to it, but our master pointer will point to the same location. Master pointer will not point those new commits that we have newly fetched from the remote server. Now if we want to make our local copy looks exact similar to the remote copy we have to merge origin/master and master pointers. Then after doing those merging both the master pointer and the origin/master pointers will point to the same commit in the local repository.Origin/master is a another branch that try to stay sync with the remote server repository.
+
+		In reality
+
+		if we have a local repository with a commits A, B, and C.
+		When we do a push to the remote server those commits will be push to the remote server. It creates the commits in the remote server and move head pointer to the master branch lates commit.
+		And at that time what git does is it add another pointer to the repository in the local branch named typically origin/master.
+		Now if we make another commits the local repository our head of that branch will move with those commits, but the origin/master pointer will stay at the same place where it synced with the remote repository.
+		Now if we do a push in will add those new commits to the remote branch and move the origin/master pointer to the point where head is pointing to in the local repository. And also the remote branch will also update those changes and point to the point where the head points to in the local repository.
+		Now if others made commits to the remote server the remote server head pointer will move forward with them.
+		Now if we do a fetch git brings those newly made changes to our computer and point the origin/master pointer to point to it.
+		But our local repository head is not pointing to where the origin/master is pointing to.
+		We have to do a merge with origin/master and master branch in our local repository to get those changes to our branch.
+
+		In general when working with remote repositories what we do is
+			we do our commits locally
+			fetch the latest from the server, get local origin/master branch sync
+			the merge any of the work you did with what just came from the remote server.
+			and push the result back to the server.
+
+
+		The normal process in working with remote repository is first we do our commits locally and fetch the latest from the remote server, and get our origin/master branch in sync and merge any of the new work we did with origin/master (newly came from the remote server) and push the result back to the remote server.
+
+		(clone repository)
+		{
+			*@ git clone https://github.com/rwdesitha/git_test.git git_test_clone *@
+			
+				will clone the project in the url
+				git will default pick the repository name as the directory name, but if we happen to have a same name folder in that path git will raise an error.
+
+				we can give the project folder name as above git_test_clone
+
+				after succssfully cloning the project if we navigate to that folder and run *@ git branch *@ git will only how one branch. 
+				But that branch will have all the previous commits
+
+				if there were several branches in the remote server, if we don't specify the branch name when we are cloning a project git will by default take the master branch.
+
+				we can get any branch in the remote server by -b option
+
+				we can configure what branch will be act as the default branch in github.
+			
+		}
+	}
+
+	git pull
+	{
+
+	}
+
+	git pull with rebase
+	{
+		git pull --rebase <remote name> <branch name>
+	}
+
+
+	(rebase)
+	{
+		senario
+			in master branch we have commits 1 2 and 3. Now we create a new branch from master branch named "dev" now dev and master have same commits.
+			Now we add commits 4 and 5 to master and 6 and 7 and 8 to dev. At this point branch master and branch dev are not same.
+			Now if we merge dev into master it will be a real merge that means master will have 1, 2, 3, 4, 5, 6, 7 and 9(merge commit)
+			If we want to get the dev branch commits to master branch without a merge commit, then first we have to rebase.
+
+			git checkout dev
+
+			git rebase master
+			{
+				what this ahove command does is, it copeis 4 and 5 commits from master to dev
+				Now master commits - 1, 2, 3, 4, 5
+					dev commits    - 1, 2, 3, 4, 5, 6, 7, 8
+			}
+			git checkout master
+
+			git merge dev
+			{
+				here when merged it will be a fast-forward merge because master does not have any new commits that is not in the
+				dev branch.
+			}
+	}
+
+	(interactive rebase)
+	{
+		git rebase -i <branch_name>
+
+		* can merge consecutive commit into one commit (squash)
+		* delete commits
+		* revise commit message
+		* ..
+	}
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+(XXXXXXX-17)
+{
+	git checkout –- file_name.ext
+
+	+In the above command “–-“ is used to indicate that it is a file not a branch in the repository.
+
+	+Because checkout command is used to checkout a branch to the local repository.
+
+	+This command affect directly to the working copy.
+
+	+It will make the working copy's file_name.ext as it is in the staging index.
+}
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+(XXXXXXX-18)
+{
+	Undo changes made to the repository (undoing commits).
+	Changing commit is very difficult in git (nearly imposible) but one can change the most recent
+	Commit of a branch.
+}
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+(XXXXXXX-19- git checkout hash_tag –- file_name.ext)
+{
+	git checkout hash_tag –- file_name.ext
+
+	This command will make the file_name.ext file in our working directory and staging index like the file in the commit that is referenced by the hash_tag.
+
+	Unlike in git checkout –- file_name.ext -> XXXXXXX-17
+	This command will update the working copy and the staged index.
+}
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+(XXXXXXX-24- git clean -n)
+{
+	git clean -n
+
+	this command will show us what are the untracked files on the working directory that need to be removed. It will only show nothing else.
+}
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+(XXXXXXX-25- git clean -f)
+{
+	git clean -f
+
+	this command will delete all the untracked files in the working directory.
+
+	if we had a file in the staging index that file will not be removed with this command.
+}
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+(XXXXXXX-26- git ls-tree --full-tree -r HEAD)
+{
+	lists all of the already committed files being tracked by your git repo.
+}
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+(-->XXXXXXX-28- ls -la file_path)
+{
+	will list down all the files in a given path including hidden files
+}
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+git checkout --detach
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+For my Code Igniter projects, I keep database.php.example and config.php.example in the repo.
+
+Then I add config.php and applications/config/database.php to the .gitignore file.
+
+So, finally, when I deploy, I can copy the .example files (to config.php and database.php), customize them, and they won't get tracked by GIT.
+---------------------------------------------------------------------------------------------------------------------------------
+
+git reflog
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+git rev-parse master
+
+---------------------------------------------------------------------------------------------------------------------------------
+
