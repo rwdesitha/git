@@ -1,0 +1,5 @@
+git add . && git commit -m "updated pom file" && git push
+
+&& -> if 1st command successfully executes then execute next command else it won't execute next command.
+& - it executes all the command
+|| - execute next command if 1st one failed
