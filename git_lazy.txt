@@ -1,0 +1,17 @@
+Go to -> C:\Program Files\Git\etc
+
+There is a file called "bash.bashrc"
+
+Add following functions to the end of the file
+----------------------------------------------
+
+function lazycommit(){
+	git add .
+	git commit -a -m "$1"
+}
+
+function lazypush(){
+	git add .
+	git commit -a -m "$1"
+	git push origin master
+}
